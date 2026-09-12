@@ -24,6 +24,32 @@ yours (`Version.parse` comparison; prerelease order `alpha < beta < rc < stable`
 `PluginBossVersionException` → "requires newer BOSS". If either version string is malformed the
 check **fails open** (loads with a warning). Leave empty if you have no hard floor.
 
+## `minApiVersion` (manifest) {#which-version-gate}
+
+The minimum **boss-plugin-api** version: not the host, but the runtime API layer the host resolves
+from the installed api jar. Empty skips the check. Fail-open on an unparseable version, like
+`minBossVersion`. Violation raises `PluginApiLevelException`, which exists to turn a
+"class not found" binary-compatibility failure into an actionable "requires API x.y.z, installed
+a.b.c".
+
+**This is a different gate from `apiVersion` above, and the difference decides which field a given
+requirement belongs in.** The api jar is updatable at runtime, independently of the host, so what
+ships through it and what does not is the whole question:
+
+| What you started using | Ships via | Gate with |
+|---|---|---|
+| A brand-new interface, object or data class from the api jar | the api jar alone | `minApiVersion` |
+| A new member on an existing type the host implements | **not** the jar | `minBossVersion` |
+
+The second row is the trap. Types the host implements are marked `@HostImplemented`, and the host
+compiles in its own copy, which **shadows** the jar's newer one. A new provider on `PluginContext`
+is a member addition to a `@HostImplemented` type, so a newer api jar does not deliver it and
+`minApiVersion` will not gate it; the requirement is a host contract and belongs in
+`minBossVersion`.
+
+Using `minApiVersion` requires a host at least as new as the platform release that introduced the
+ApiClassLoader.
+
 ## `minIpcVersion` (out-of-process plugins only)
 
 For `isolationMode: out-of-process` plugins, declares the minimum host IPC protocol version. The
@@ -66,6 +92,7 @@ compileOnly(files("$bossPluginApiPath/build/libs/boss-plugin-api-1.0.47.jar"))
 |---|---|---|
 | `apiVersion` | major ==, host minor ≥ yours | `PluginApiVersionException` → disabled |
 | `minBossVersion` | host ≥ yours (semver; fail-open if unparseable) | `PluginBossVersionException` → disabled |
+| `minApiVersion` | installed api jar ≥ yours (fail-open if unparseable) | `PluginApiLevelException` → disabled |
 | `minIpcVersion` (OOP) | host IPC major ==, host ≥ yours | not spawned |
 | binary compat | all referenced `ai.rever.boss.plugin.*` symbols resolve | `PluginBinaryIncompatibilityException` → disabled |
 
