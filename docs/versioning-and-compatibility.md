@@ -24,7 +24,9 @@ yours (`Version.parse` comparison; prerelease order `alpha < beta < rc < stable`
 `PluginBossVersionException` → "requires newer BOSS". If either version string is malformed the
 check **fails open** (loads with a warning). Leave empty if you have no hard floor.
 
-## `minApiVersion` (manifest) {#which-version-gate}
+<a id="which-version-gate"></a>
+
+## `minApiVersion` (manifest)
 
 The minimum **boss-plugin-api** version: not the host, but the runtime API layer the host resolves
 from the installed api jar. Empty skips the check. Fail-open on an unparseable version, like
