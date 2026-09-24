@@ -75,7 +75,9 @@ newer than the hosts you target. **Host-maintainer takeaway:** never change a pu
 (or other public) JVM signature in `plugin-ui-core`/`boss-plugin-api` in place — add an overload —
 or every plugin compiled against the old signature breaks.
 
-## Choosing the `boss-plugin-api` pin {#choosing-the-api-pin}
+<a id="choosing-the-api-pin"></a>
+
+## Choosing the `boss-plugin-api` pin
 
 `build.gradle.kts` pins the api jar for local builds:
 
